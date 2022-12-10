@@ -1,0 +1,42 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const http = require("http");
+const url = require("url");
+const port = process.env.WEB_PORT;
+const status = {
+    fail: false,
+};
+const server = http.createServer((req, res) => {
+    if (status.fail) {
+        res.writeHead(500, { 'Content-Type': 'text/html' });
+        res.end('Something wrong');
+        return;
+    }
+    const { pathname, query } = url.parse(req.url, true);
+    switch (pathname) {
+        case '/health':
+            res.writeHead(200, { 'Content-Type': 'text/html' });
+            res.end('Ok!');
+            break;
+        case '/a':
+            const a = Number(query.dv) / Number(query.t);
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                a,
+            }));
+            break;
+        default:
+            res.writeHead(404, { 'Content-Type': 'text/html' });
+            res.end('Not Found');
+            break;
+    }
+});
+server.listen(port, (err) => {
+    if (err) {
+        return console.log('something bad happened', err);
+    }
+    console.log(`server is listening on ${port}`);
+});
+setTimeout(() => {
+    status.fail = true;
+}, Math.random() * 300000);
